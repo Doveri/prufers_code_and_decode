@@ -2,6 +2,9 @@
 #include <vector>
 #include <unordered_map>
 #include <algorithm>
+#include <random>
+#include <utility>
+
 // Объявляем функции `pruferCode` и `pruferDecode`,
 // которые будут использоваться в главной функции.
 std::vector<int> pruferCode(std::vector<std::pair<int, int>> edges);
@@ -9,20 +12,44 @@ std::vector<std::pair<int, int>> pruferDecode(std::vector<int> c);
 
 int main()
 {
-    /* Создаём вектор `edges`, который содержит набор рёбер графа.*/
-    std::vector<std::pair<int, int>> edges = {{1, 2}, {1, 7}, {1, 8}, {2, 6}, {3, 5}, {4, 5}, {5, 6}, {5, 9}};
+    std::vector<std::pair<int, int>> edges; // массив для хранения пар вершин
+    // Создаем генератор случайных чисел
+    std::random_device rd;
+    std::mt19937 g(rd());
+    
+    std::vector<int> nums = {1, 2, 3, 4, 5, 6, 7, 8, 9}; // массив с номерами вершин
+    
+    std::shuffle(nums.begin(), nums.end(), g); // перемешиваем номера вершин
 
-    /* Вызываем функцию `pruferCode` с `edges` в качестве аргумента,
-     * чтобы получить код Прюфера для этого графа.
-     */
+    // Заполняем массив пар вершин
+    for (int i = 0; i < 7; ++i) {
+        int a = nums[i];
+        int b = nums[i + 1];
+        // Проверяем, что текущая пара вершин не повторяется и не похожа на уже добавленные.
+        while (a == b || std::find_if(edges.begin(), edges.end(), [&](const auto& e) {
+            return (e.first == a && e.second == b) || (e.first == b && e.second == a);
+        }) != edges.end()) {
+            std::shuffle(nums.begin(), nums.end(), g); // перемешиваем номера вершин
+            a = nums[i];
+            b = nums[i + 1];
+        }
+        edges.emplace_back(a, b); // добавляем новую пару вершин в массив
+    }
+
+    // Выводим полученный граф на экран
+    for (const auto& edge : edges) {
+        std::cout << "(" << edge.first << ", " << edge.second << ")" << std::endl;
+    }
+
+    // Вызываем функцию `pruferCode` с `edges` в качестве аргумента,
+    // чтобы получить код Прюфера для этого графа.
     std::vector<int> code = pruferCode(edges);
 
-    /* Вызываем функцию `pruferDecode` с `code` в качестве аргумента,
-     * чтобы расшифровать код Прюфера и получить вектор пар вершин.
-     */
+    // Вызываем функцию `pruferDecode` с `code` в качестве аргумента,
+    // чтобы расшифровать код Прюфера и получить вектор пар вершин.
     std::vector<std::pair<int, int>> nodes = pruferDecode(code);
-    
-    // Выводим на экран результат.
+
+    // Выводим на экран результаты выполнения функций
     std::cout << "Prufer's code: ";
     for (int i = 0; i < code.size(); i++)
     {
@@ -37,8 +64,7 @@ int main()
     }
     std::cout << std::endl;
 
-    // Возвращаем 0, чтобы показать, что программа завершилась без ошибок.
-    return 0;
+    return 0; // Возвращаем 0, чтобы показать, что программа завершилась без ошибок.
 }
 
 // Объявляем функцию `pruferCode`, которая будет принимать вектор пар целых чисел `edges`
